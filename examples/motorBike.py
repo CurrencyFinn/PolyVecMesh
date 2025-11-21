@@ -32,6 +32,6 @@ if __name__ == "__main__":
                          fill=False, edgecolor="black", linewidth=2, zorder=1)
     ax.add_patch(rect)
     plt.tight_layout()
-    plt.savefig(r"imgs/motorBike.svg", dpi=300)
+    plt.savefig(r"imgs/motorBike.svg", dpi=300, bbox_inches="tight")
     plt.show()
     
