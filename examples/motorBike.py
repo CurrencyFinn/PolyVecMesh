@@ -1,10 +1,10 @@
-from PolyVecMesh_UPDATE import PolyVecMesh as pvm
+from PolyVecMesh import PolyVecMesh as pvm
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
-
+import numpy as np
 if __name__ == "__main__":
-    vtkFile = r'resources\topview\topview_0_0.vtu' 
-    pvm = pvm(vtkFile)
+    vtkFile = r'resources\motorBike\motorBike_0_0.vtu' 
+    pvm = pvm(vtkFile, tol=np.inf)
     _, ax = plt.subplots(figsize=(10,10))
     meshLines = pvm.createCollection()
     cellLineCollection = LineCollection(meshLines, linewidths=0.5)

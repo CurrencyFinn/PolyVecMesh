@@ -10,6 +10,7 @@ from matplotlib.collections import LineCollection
 #       e.g. before making cells selecting points that have issues to filter off, \
 #       perhaps create a distance inveral for maxDistanceOffSlice or as a coordinate
 # Auto select maxDistanceOffSlice -> Own slicing tool pretty much
+# Only select frontal faces -> small details motorBike case issues projection, where boundary layers collapse
 
 ### Optimalization
 # Skip faces/edges with normal far away from the posed normal
@@ -108,8 +109,8 @@ class PolyVecMesh:
         pointTypeStr = pointDataXML.attrib["type"]
 
         pointTyping = np.float32 if pointTypeStr == "Float32" else np.float64
-        pointData = np.genfromtxt((line.rstrip() for line in pointDataXML.text.splitlines()),
-                                delimiter=' ', dtype=pointTyping)
+        txt = pointDataXML.text.strip().split() 
+        pointData = np.array(txt, dtype=pointTyping)   
         self.points = pointData.reshape(-1, nComponents)
 
         # Auto compute the normal direction of plane taken and origin

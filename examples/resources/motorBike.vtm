@@ -1,0 +1,23 @@
+<VTKFile type="vtkMultiBlockDataSet" version="1.0" byte_order="LittleEndian" header_type="UInt64">
+  <vtkMultiBlockDataSet>
+    <DataSet index="0" name="internalMesh" file="motorBike/motorBike_0_0.vtu"/>
+  </vtkMultiBlockDataSet>
+  <FieldData>
+    <DataArray type="Int8" Name="CasePath" NumberOfTuples="65" format="ascii" RangeMin="0" RangeMax="119">
+      92 92 119 115 108 46
+      108 111 99 97 108 104
+      111 115 116 92 85 98
+      117 110 116 117 92 104
+      111 109 101 92 102 105
+      110 110 92 79 112 101
+      110 70 79 65 77 92
+      102 105 110 110 45 49
+      48 92 114 117 110 92
+      109 111 116 111 114 66
+      105 107 101 92 0
+    </DataArray>
+    <DataArray type="Float64" Name="TimeValue" NumberOfTuples="1" format="ascii" RangeMin="0" RangeMax="0">
+      0
+    </DataArray>
+  </FieldData>
+</VTKFile>
