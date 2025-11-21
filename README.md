@@ -18,10 +18,10 @@ This enables high-resolution, scalable mesh figures, something that is not easil
 
 ## Mesh Visualisations
 
-<p align="center">
-  <img src="examples/imgs/motorBike.svg" alt="Motor Bike Mesh" style="width:49%; margin-right:1%;">
-  <img src="examples/imgs/coilTop.svg" alt="Coil Top Mesh" style="width:49%;">
-</p>
+<div style="display: flex; justify-content: center; gap: 10px; align-items: stretch;">
+  <img src="examples/imgs/motorBike.svg" alt="Motor Bike Mesh" style="flex: 1; height: auto; width: auto; max-height: 400px;">
+  <img src="examples/imgs/coilTop.svg" alt="Coil Top Mesh" style="flex: 1; height: auto; width: auto; max-height: 400px;">
+</div>
 
 ## Usage
 
@@ -67,6 +67,7 @@ if __name__ == "__main__":
 - [ ] Skip faces/edges whose normals deviate strongly from the slice normal
 - [ ] Improve hexahedral handling: assign faces individually and use uniqueness  
       to filter overlapping faces with polyhedral cells
+
 
 
 
