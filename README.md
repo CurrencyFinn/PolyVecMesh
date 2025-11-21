@@ -7,11 +7,11 @@ PolyVecMesh is a lightweight tool for visualising CFD polyhedral and hexahedral 
 
 This enables high-resolution, scalable mesh figures, something that is not easily achievable in ParaView for vector graphics.
 
-##Requirements
+### Requirements
 - Mesh exported from ParaView as VTK Multi-Block
 - Python ≥3.8
 
-##Python Dependencies
+### Python Dependencies
 - numpy
 - matplotlib
 - xml
@@ -45,3 +45,4 @@ if __name__ == "__main__":
 
     plt.show()
 ```
+
