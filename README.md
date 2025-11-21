@@ -1,5 +1,6 @@
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/CurrencyFinn/TermSymbolCpp/blob/main/LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.1.0-blue.svg)](https://github.com/CurrencyFinn/TermSymbolCpp/releases/)
+![Logo](examples/imgs/logo.svg)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/CurrencyFinn/PolyVecMesh/blob/main/LICENSE)
+[![Version](https://img.shields.io/badge/Version-0.1.0-blue.svg)](https://github.com/CurrencyFinn/PolyVecMesh/releases/)
 
 # PolyVecMesh
 
@@ -73,6 +74,7 @@ if __name__ == "__main__":
 ## License
 
 [MIT](https://github.com/CurrencyFinn/PolyVecMesh/blob/main/LICENSE)
+
 
 
 
