@@ -46,3 +46,16 @@ if __name__ == "__main__":
     plt.show()
 ```
 
+## TODO
+
+### Functionality
+- [ ] Multi-region support + VTK colouring
+- [ ] Smarter detection of cells outside the slice plane when using implicit clipping  
+      → e.g., pre-filter points with large deviation  
+      → introduce a `maxDistanceOffSlice` threshold
+- [ ] Auto-detect `maxDistanceOffSlice` (essentially a custom slicing tool)
+
+### Optimization
+- [ ] Skip faces/edges whose normals deviate strongly from the slice normal
+- [ ] Improve hexahedral handling: assign faces individually and use uniqueness  
+      to filter overlapping faces with polyhedral cells
