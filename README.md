@@ -1,5 +1,5 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/CurrencyFinn/TermSymbolCpp/blob/main/LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.0.1.0-blue.svg)](https://github.com/CurrencyFinn/TermSymbolCpp/releases/)
+[![Version](https://img.shields.io/badge/Version-0.1.0-blue.svg)](https://github.com/CurrencyFinn/TermSymbolCpp/releases/)
 
 # PolyVecMesh
 
@@ -19,10 +19,9 @@ This enables high-resolution, scalable mesh figures, something that is not easil
 ## Mesh Visualisations
 
 <p align="center">
-  <img src="examples/imgs/motorBike.svg" alt="Motor Bike Mesh" height="200px" style="margin-right:20px;">
-  <img src="examples/imgs/coilTop.svg" alt="Coil Top Mesh" height="200px">
+  <img src="examples/imgs/motorBike.svg" alt="Motor Bike Mesh" height="300px" style="margin-right:10px;">
+  <img src="examples/imgs/coilTop.svg" alt="Coil Top Mesh" height="300px">
 </p>
-
 
 ## Usage
 
@@ -58,15 +57,28 @@ if __name__ == "__main__":
 
 ### Functionality
 - [ ] Multi-region support + VTK colouring
-- [ ] Smarter detection of cells outside the slice plane when using implicit clipping  
-      → e.g., pre-filter points with large deviation  
-      → introduce a `maxDistanceOffSlice` threshold
+- [ ] Smarter detection of cells outside the slice plane when using implicit clipping
+    - e.g., pre-filter points with a large deviation of the normal
+    - introduce a `maxDistanceOffSlice` threshold
 - [ ] Auto-detect `maxDistanceOffSlice` (essentially a custom slicing tool)
-- [ ] Select only front faces, boundary layer collapse motorbike case issues
+- [ ] Select only front faces, boundary layer collapse, motorbike case issues
+    - e.g., compute face node average for all faces, remove those below the plane that lower the total average.
+    - e.g., select faces with normals aligned with the plane normal; check if it works for back faces when polyhedron normals point outward.
 
 ### Optimization
 - [ ] Skip faces/edges whose normals deviate strongly from the slice normal
 - [ ] Improve hexahedral handling: assign faces individually and use uniqueness  
       to filter overlapping faces with polyhedral cells
+
+## License
+
+[MIT](https://github.com/CurrencyFinn/PolyVecMesh/blob/main/LICENSE)
+
+
+
+
+
+
+
 
 
