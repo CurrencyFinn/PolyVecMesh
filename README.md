@@ -58,12 +58,13 @@ if __name__ == "__main__":
 ### Functionality
 - [ ] Multi-region support + VTK colouring
 - [ ] Smarter detection of cells outside the slice plane when using implicit clipping  
-      → e.g., pre-filter points with large deviation of normal  
-      → introduce a `maxDistanceOffSlice` threshold
+      - e.g., pre-filter points with large deviation of normal  
+      - introduce a `maxDistanceOffSlice` threshold
 - [ ] Auto-detect `maxDistanceOffSlice` (essentially a custom slicing tool)
 - [ ] Select only front faces, boundary layer collapse, motorbike case issues
-      → e.g., face node average for all faces, total average from all faces, remove the ones that result in lowering the average faces are below the plane of interest, as otherwise, polyhedra with faces
-      → e.g., select on face normal direction aligned with the plane normal, see if it works for back faces, if the normal is also outwards pointing directly for polyhedra
+    - e.g., compute face node average for all faces, remove those below the plane that lower the total average.
+    - e.g., select faces with normals aligned with the plane normal; check if it works for back faces when polyhedron normals point outward.
+
 ### Optimization
 - [ ] Skip faces/edges whose normals deviate strongly from the slice normal
 - [ ] Improve hexahedral handling: assign faces individually and use uniqueness  
@@ -72,6 +73,7 @@ if __name__ == "__main__":
 ## License
 
 [MIT](https://github.com/CurrencyFinn/PolyVecMesh/blob/main/LICENSE)
+
 
 
 
