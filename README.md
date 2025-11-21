@@ -1,7 +1,8 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/CurrencyFinn/PolyVecMesh/blob/main/LICENSE)
 [![Version](https://img.shields.io/badge/Version-0.1.0-blue.svg)](https://github.com/CurrencyFinn/PolyVecMesh/releases/)
 
-<img src="examples/imgs/logo.svg" alt="Logo" width="80">
+<img src="examples/imgs/logo.svg" alt="Logo" width="150">
+
 # PolyVecMesh
 
 PolyVecMesh is a lightweight tool for visualising CFD polyhedral and hexahedral meshes in 2D vector format. It converts meshes exported from ParaView (VTK Multi-Block format) into clean, publication-quality (vector format) graphics that can be plotted directly with matplotlib.
@@ -74,6 +75,7 @@ if __name__ == "__main__":
 ## License
 
 [MIT](https://github.com/CurrencyFinn/PolyVecMesh/blob/main/LICENSE)
+
 
 
 
