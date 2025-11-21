@@ -54,6 +54,7 @@ if __name__ == "__main__":
       → e.g., pre-filter points with large deviation  
       → introduce a `maxDistanceOffSlice` threshold
 - [ ] Auto-detect `maxDistanceOffSlice` (essentially a custom slicing tool)
+- [ ] Select only front faces, boundary layer collapse motorbike case issues
 
 ### Optimization
 - [ ] Skip faces/edges whose normals deviate strongly from the slice normal

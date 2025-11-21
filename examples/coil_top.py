@@ -1,4 +1,4 @@
-from PolyVecMesh_UPDATE import PolyVecMesh as pvm
+from PolyVecMesh import PolyVecMesh as pvm
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 
@@ -11,4 +11,6 @@ if __name__ == "__main__":
     ax.add_collection(cellLineCollection, autolim=True)
     ax.autoscale(enable=True, tight=True)
     ax.set_aspect('equal', adjustable='box')
+    plt.tight_layout()
     plt.show()
+    plt.savefig(r"imgs/coilTop.svg", dpi=300)
