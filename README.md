@@ -1,5 +1,5 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/CurrencyFinn/TermSymbolCpp/blob/main/LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.0.1.0-blue.svg)](https://github.com/CurrencyFinn/TermSymbolCpp/releases/)
+[![Version](https://img.shields.io/badge/Version-0.1.0-blue.svg)](https://github.com/CurrencyFinn/TermSymbolCpp/releases/)
 
 # PolyVecMesh
 
@@ -18,16 +18,10 @@ This enables high-resolution, scalable mesh figures, something that is not easil
 
 ## Mesh Visualisations
 
-<table>
-  <tr>
-    <td align="center">
-      <img src="examples/imgs/motorBike.svg" alt="Motor Bike Mesh" style="max-height:400px;">
-    </td>
-    <td align="center">
-      <img src="examples/imgs/coilTop.svg" alt="Coil Top Mesh" style="max-height:400px;">
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="examples/imgs/motorBike.svg" alt="Motor Bike Mesh" height="300px" style="margin-right:10px;">
+  <img src="examples/imgs/coilTop.svg" alt="Coil Top Mesh" height="300px">
+</p>
 
 ## Usage
 
@@ -73,6 +67,7 @@ if __name__ == "__main__":
 - [ ] Skip faces/edges whose normals deviate strongly from the slice normal
 - [ ] Improve hexahedral handling: assign faces individually and use uniqueness  
       to filter overlapping faces with polyhedral cells
+
 
 
 
