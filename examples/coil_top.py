@@ -12,5 +12,6 @@ if __name__ == "__main__":
     ax.autoscale(enable=True, tight=True)
     ax.set_aspect('equal', adjustable='box')
     plt.tight_layout()
-    plt.show()
     plt.savefig(r"imgs/coilTop.svg", dpi=300)
+    plt.show()
+    
