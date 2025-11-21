@@ -16,6 +16,14 @@ This enables high-resolution, scalable mesh figures, something that is not easil
 - matplotlib
 - xml
 
+## Mesh Visualisations
+
+### Motor Bike
+![Motor Bike Mesh](examples/imgs/motorBike.svg)
+
+### Coil Top
+![Coil Top Mesh](examples/imgs/coilTop.svg)
+
 ## Usage
 
 1. In ParaView, create a 2D slice of your mesh.  
@@ -60,3 +68,4 @@ if __name__ == "__main__":
 - [ ] Skip faces/edges whose normals deviate strongly from the slice normal
 - [ ] Improve hexahedral handling: assign faces individually and use uniqueness  
       to filter overlapping faces with polyhedral cells
+
