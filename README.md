@@ -18,13 +18,9 @@ This enables high-resolution, scalable mesh figures, something that is not easil
 
 ## Mesh Visualisations
 
-<p align="center">
-  <span style="margin-right:10px;">
-    <img src="examples/imgs/motorBike.svg" alt="Motor Bike Mesh" style="width:70.07%;">
-  </span>
-  <span>
-    <img src="examples/imgs/coilTop.svg" alt="Coil Top Mesh" style="width:29.92%;">
-  </span>
+<p align="center"> 
+  <img src="examples/imgs/motorBike.svg" alt="Motor Bike Mesh" style="width:65%;"> 
+  <img src="examples/imgs/coilTop.svg" alt="Coil Top Mesh" style="width:28%;"> 
 </p>
 
 ## Usage
