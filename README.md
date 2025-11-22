@@ -25,6 +25,12 @@ This enables high-resolution, scalable mesh figures, something that is not easil
 
 ## Usage
 
+
+0. Local install, from the root folder (where `pyproject.toml` is):
+```bash
+pip install -e .
+```
+
 1. In ParaView, create a 2D slice of your mesh.  
 2. Export the slice as XML Multi Block Data (`.vtm`) with Data Mode: ASCII.  
 3. In Python, load the file using the `PolyVecMesh` class.  
@@ -66,6 +72,8 @@ if __name__ == "__main__":
     - e.g., select faces with normals aligned with the plane normal; check if it works for back faces when polyhedron normals point outward.
 - [ ] Include off-normal 2D plane creation, now only a plane can be made in the mesh aligned with the axis
     - e.g., rotate all points until it is aligned with the axis to remove excess points.
+- [ ] PyPI installation
+      
 ### Optimization
 - [ ] Skip faces/edges whose normals deviate strongly from the slice normal
 - [ ] Improve hexahedral handling: assign faces individually and use uniqueness  
@@ -74,6 +82,7 @@ if __name__ == "__main__":
 ## License
 
 [MIT](https://github.com/CurrencyFinn/PolyVecMesh/blob/main/LICENSE)
+
 
 
 
