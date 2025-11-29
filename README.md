@@ -1,5 +1,5 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/CurrencyFinn/PolyVecMesh/blob/main/LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.1.0-blue.svg)](https://github.com/CurrencyFinn/PolyVecMesh/releases/)
+[![Version](https://img.shields.io/badge/Version-0.1.1-blue.svg)](https://github.com/CurrencyFinn/PolyVecMesh/releases/)
 
 <img src="examples/imgs/logo.svg" alt="Logo" width="300">
 
@@ -78,6 +78,7 @@ if __name__ == "__main__":
 ## License
 
 [MIT](https://github.com/CurrencyFinn/PolyVecMesh/blob/main/LICENSE)
+
 
 
 
