@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "PolyVecMesh"
-version = "0.1.0"
+version = "0.1.1"
 description = "Slice and visualize polyhedral/hexahedral CFD meshes as vector graphics"
 readme = "README.md"
 license = "MIT"
@@ -16,8 +16,8 @@ keywords = ["CFD", "openfoam", "mesh", "paraview", "vectorgraphic"]
 requires-python = ">=3.8"
 dependencies = [
     "numpy",
+    "numba",
     "matplotlib",
-    "xml",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",

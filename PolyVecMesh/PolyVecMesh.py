@@ -1,7 +1,9 @@
 from xml.etree import ElementTree as ET
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.collections import LineCollection
+from matplotlib.collections import PolyCollection
+import math
+from numba import jit
 
 ### TODO
 ### Functionality
@@ -10,12 +12,8 @@ from matplotlib.collections import LineCollection
 #       e.g. before making cells selecting points that have issues to filter off, \
 #       perhaps create a distance inveral for maxDistanceOffSlice or as a coordinate
 # Auto select maxDistanceOffSlice -> Own slicing tool pretty much
-# Only select frontal faces -> small details motorBike case issues projection, where boundary layers collapse
-
-### Optimalization
-# Skip faces/edges with normal far away from the posed normal
-# Switch hexehedrals to facewise assigning, can then use uniqueness to filter that off with faces from polyhedrals
-
+### Bug
+# Debug plot coloring not correct as removal of some of the faces, arrays are inconisistent
 
 class PolyVecMesh:
     """
@@ -34,7 +32,7 @@ class PolyVecMesh:
         Axis normal to the slicing plane: 0=x, 1=y, 2=z. Auto-selected if None.
     tol : float, default=1e-3
         Tolerance for filtering hexahedral edges along the normal direction.
-    direction : int, default=1
+    planeSide : int, default=1
         Side of the plane to include: 1 = along normal, -1 = opposite.
 
     Attributes
@@ -60,22 +58,23 @@ class PolyVecMesh:
         Array of face definitions for polyhedral cells.
     faceOffsets : ndarray
         Offsets into the `faces` array per cell.
-    edges : tuple
-        Hardcoded hexahedral edges.
+    facesHexaHedral : np.ndarray (6,4)
+        Array of hexahedral faces. Each row corresponds to a face of the hexahedron, 
+        and contains the indices of the four vertices that form that face.
     """
     def __init__(
             self, fileName, sliceOrigin=None, 
-            debug=0, normalPlaneDirection=None, tol=1e-3, direction=1):
+            debug=0, normalPlaneDirection=None, tol=1e-3, planeSide=1):
         
         self.fileName = fileName
         self.normalPlaneDirection = normalPlaneDirection
         self.tol = tol
+        self.epsilon = 0.1
         self.debug = debug
         self.sliceOrigin = sliceOrigin
-        self.planeSide= direction
+        self.planeSide= planeSide
         self.allCellCollection = []
         
-
         self.nCells = None
         self.points = None
         self.connectivity = None
@@ -86,12 +85,16 @@ class PolyVecMesh:
         self.faceOffsets = None
         self.colors = None
 
-        self.edges = (
-            [0,1],[1,2],[2,3],[3,0],  # bottom face
-            [4,5],[5,6],[6,7],[7,4],  # top face
-            [0,4],[1,5],[2,6],[3,7]   # vertical edges
+        self.facesHexaHedral = np.array(
+            ((0,1,2,3),   # Face 0  bottom
+            (4,5,6,7),    # Face 1  top
+            (0,4,5,1),    # Face 2  side
+            (1,5,6,2),    # Face 3  side
+            (2,6,7,3),    # Face 4  side
+            (3,7,4,0)),   # Face 5  side
+            dtype=np.int8
         )
-        
+
         self.loadVTK()
 
     def loadVTK(self):   
@@ -160,55 +163,59 @@ class PolyVecMesh:
             nFaces = self.faces[faceOffsetValue]
             idx = faceOffsetValue + 1   # first face starts after nFaces
 
+            allPts3D = []
             for _ in range(nFaces): # Go through each face closing
                 nVerts = self.faces[idx]
                 verts = self.faces[idx+1:idx+1+nVerts]
-                pts2D = np.delete(self.points[verts], self.normalPlaneDirection, axis=1)
-                pts2D = np.vstack([pts2D, pts2D[0]])  # close this face polygon
-                self.allCellCollection.append(pts2D)
-                if self.debug:
-                    self.colors.append('red')
+                pts3D = self.points[verts]
+                allPts3D.append(pts3D)
+                normal = self.plane_normal(pts3D)  
+                if self.is_axis_aligned(normal[self.normalPlaneDirection], strict=False): # TODO leaves unwanted slivers motorBike case
+                    pts3D = np.vstack([pts3D, pts3D[0]])  # close this face polygon
+                    self.allCellCollection.append(pts3D)
+                    if self.debug:
+                        self.colors.append('red')
                 idx += 1 + nVerts
+
+            '''
+            # The normal is always correctly computed so no need to adjust this in polyhedron
+
+            allFaceValues = np.concatenate(allPts3D).reshape(-1, 3)
+            cell_center = allFaceValues.mean(axis=0)
+            for pts3D in allPts3D:
+                normal = self.plane_normal(pts3D)
+                face_center = pts3D.mean(axis=0)
+                if np.dot(normal, face_center - cell_center) < 0:
+                    pts3D = pts3D[::-1]  # flip winding
+                    normal = -normal   
+                    # print("wrong normal")
+            '''
 
         # VTK_HEXAHEDRON (12)
         if self.cellTypes[cellIndex] == 12 and len(cellPoints) == 8:
-            for e in self.edges:
-                start3D = cellPoints[e[0]]
-                end3D   = cellPoints[e[1]]
+            cell_center = cellPoints.mean(axis=0)
+            for face in self.facesHexaHedral: # Go through each face closing
+                pts3D = cellPoints[face]
+                normal = self.plane_normal(pts3D)
+                face_center = pts3D.mean(axis=0)
+                if np.dot(normal, face_center - cell_center) < 0:
+                    pts3D = pts3D[::-1]  # flip winding
+                    normal = -normal   
+                    #print("wrong normal")
 
-                # (optional) Keep only edges on one side of the slicing plane: uncomment if needed ### led to 30% decrease in cells
-                if self.planeSide == 1:
-                    if start3D[self.normalPlaneDirection] < self.sliceCoordinate:
-                        continue
-                    if end3D[self.normalPlaneDirection] < self.sliceCoordinate:
-                        continue
-                elif self.planeSide == -1:
-                    if start3D[self.normalPlaneDirection] > self.sliceCoordinate:
-                        continue
-                    if end3D[self.normalPlaneDirection] > self.sliceCoordinate:
-                        continue
-
-                # Skip edges that run along the normalPlaneDirection (i.e. vertical edges relative to slicing plane), decrease number of plot output # Leads to very low amount of decrease
-                delta = np.abs(end3D[self.normalPlaneDirection] - start3D[self.normalPlaneDirection])
-                if delta > self.tol:
-                    continue
-
-                # Project both endpoints to 2D (drop normalPlaneDirection)
-                start2D = np.delete(start3D, self.normalPlaneDirection)
-                end2D   = np.delete(end3D,   self.normalPlaneDirection)
-
-                # Store segment
-                seg = np.vstack([start2D, end2D])
-                self.allCellCollection.append(seg)
-                if self.debug:
-                    self.colors.append('black')
+                if self.is_axis_aligned(normal[self.normalPlaneDirection], strict=True, planeSide=self.planeSide): 
+                    pts3D = np.vstack([pts3D, pts3D[0]])  # close the hexahedral
+                    self.allCellCollection.append(pts3D)
+                    if self.debug:
+                        self.colors.append('black')
         else:
             Warning("Unsupported VTK type skipping")
 
     @staticmethod
     def unique_ragged(list_):
         """
-        Helper function to find unique arrays in a list without sorting.
+        Helper function to find unique arrays in a list without sorting. 
+        Keeps first occurence deletes duplicates after first occurence.
 
         Parameters
         ----------
@@ -228,6 +235,81 @@ class PolyVecMesh:
                 seen.add(h)
                 unique_list.append(arr)
         return unique_list
+    
+    @staticmethod
+    @jit(nopython=True) 
+    def plane_normal(facePoints):
+        """
+        Compute a normal for a polygon/hexahedral robustly.
+
+        Parameters
+        ----------
+        facePoints : numpy.ndarray (N,3) of 3D coordinates
+            Array of 3D points on given face.
+
+        Returns
+        -------
+        normal : numpy.ndarray (3)
+            Normal unit vector, or [0,0,0] if all points are collinear.
+        """
+
+        nPoints = facePoints.shape[0]
+        
+        for i in range(nPoints - 2):
+            A = facePoints[i]
+            B = facePoints[i + 1]
+            C = facePoints[i + 2]
+
+            v1 = B - A
+            v2 = C - A
+
+            # cross product
+            nx = v1[1]*v2[2] - v1[2]*v2[1]
+            ny = v1[2]*v2[0] - v1[0]*v2[2]
+            nz = v1[0]*v2[1] - v1[1]*v2[0]
+
+            norm = math.sqrt(nx*nx + ny*ny + nz*nz)
+
+            if norm > 1e-8: 
+                inv = 1.0 / norm
+                normal = np.array([nx*inv, ny*inv, nz*inv], dtype=np.float32)
+                return normal
+            
+        print("Warning: zero normal face detected")
+        # all triples were degenerate
+        normal = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        return normal
+
+    @staticmethod
+    @jit(nopython=True)
+    def is_axis_aligned(normalComponent, tol=0.25, strict=False, planeSide=0.0):
+        """
+        Check if a component of a normal vector is aligned with an axis.
+
+        Parameters
+        ----------
+        normalComponent : float
+            The component of the normal vector along a chosen coordinate axis.
+        tol : float, default=0.25
+            Tolerance for alignment
+        strict : bool, optional, default=False
+            If True, checks alignment relative to `planeSide`.  
+            If False, checks if the face lies on the plane along the axis 
+            irrespective of the normal's direction (front or back).  
+        planeSide : float, optional, default=0.0
+            Reference value for strict alignment, can be -1 or 1. Only used if `strict=True`.
+
+        Returns
+        -------
+        aligned : bool
+            True if the normal component is considered aligned with the axis 
+            within the specified tolerance, False otherwise.
+        """
+
+        if strict:
+            return abs(normalComponent - planeSide) <= tol
+        else:
+            return abs(normalComponent - 1.0) <= tol or abs(normalComponent + 1.0) <= tol
 
 
     def createCollection(self, maxDistanceOffSlice=np.inf):
@@ -269,10 +351,23 @@ class PolyVecMesh:
                 continue 
 
             self.generateCellLines(cellPoints, i)
-
-        # reduce the number of draw calls by only selecting unique points some may overlap in normalPlaneDirection ### led to 50% decrease in draw calls
-        self.allCellCollection = self.unique_ragged(self.allCellCollection) 
         
+        # Sort faces along normalPlaneDirection so that the near-to-far ordering is preserved.
+        # unique_ragged() will then eliminate duplicate faces on the opposite side.
+        # After deduplication, reverse the list so that rendering draws the nearest faces last.
+        averageFaceHeight = np.array([np.average(face[:, self.normalPlaneDirection], axis=0) for face in self.allCellCollection])
+        heightMapIndices = np.argsort(averageFaceHeight)
+        if self.planeSide == 1:
+            heightMapIndices = heightMapIndices[::-1]
+
+        self.allCellCollection = [self.allCellCollection[i] for i in heightMapIndices]
+        self.allCellCollection =  [np.delete(face, self.normalPlaneDirection, axis=1) for face in self.allCellCollection]
+        
+        # reduce the number of draw calls by only selecting unique points some may overlap in normalPlaneDirection
+        self.allCellCollection = self.unique_ragged(self.allCellCollection) 
+        self.allCellCollection = self.allCellCollection[::-1]
+
+
         return self.allCellCollection
 
     def debug_plot(self):
@@ -280,9 +375,8 @@ class PolyVecMesh:
         self.debug = 1 # overwrite the debug option
         _, ax = plt.subplots(figsize=(10,10))
         meshLines = self.createCollection()
-        cellLineCollection = LineCollection(meshLines, colors=self.colors, linewidths=0.5)
-        ax.add_collection(cellLineCollection, autolim=True)
+        poly = PolyCollection(meshLines, closed=False, edgecolors=self.colors, facecolors='white', linewidths=0.5)
+        ax.add_collection(poly, autolim=True)
         ax.autoscale(enable=True, tight=True)
         ax.set_aspect('equal', adjustable='box')
         plt.show()
-
