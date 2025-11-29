@@ -70,7 +70,7 @@ if __name__ == "__main__":
 - [ ] PyPI installation
 
 ### Optimization
-- [ ]
+- [ ] -
 
 ### Bugs
 - [ ] In `debug_plot`, the `self.colors` list is not updated when unwanted faces are removed Will be updated when including multi-region.
@@ -78,6 +78,7 @@ if __name__ == "__main__":
 ## License
 
 [MIT](https://github.com/CurrencyFinn/PolyVecMesh/blob/main/LICENSE)
+
 
 
 
