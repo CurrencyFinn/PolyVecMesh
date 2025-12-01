@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import PolyCollection
 import math
 from numba import jit
+import os
 
 ### TODO
 ### Functionality
@@ -37,27 +38,17 @@ class PolyVecMesh:
 
     Attributes
     ----------
+    region : dict
+        Dict from all mesh names including all reference data, such as points etc.
     allCellCollection : list
         Collection of 2D points per face (polyhedra) or per cell (hexahedra)
         to be drawn with matplotlib LineCollection.
     colors : list
         List of colors corresponding to `allCellCollection` segments.
-    nCells : int
-        Number of cells in the mesh.
-    points : ndarray
-        Array of mesh points (coordinates).
-    connectivity : ndarray
-        Cell connectivity array (point indices per cell).
-    offsets : ndarray
-        Offsets into the connectivity array per cell.
-    cellTypes : ndarray
-        Array of VTK cell types.
-    sliceCoordinate : float
-        Coordinate along `normalPlaneDirection` defining the slicing plane.
-    faces : ndarray
-        Array of face definitions for polyhedral cells.
-    faceOffsets : ndarray
-        Offsets into the `faces` array per cell.
+    basedir : string
+        Relative directory from vtm filename.
+    names : list
+        List of all sub mesh names, if only one region then named `internalMesh`.
     facesHexaHedral : np.ndarray (6,4)
         Array of hexahedral faces. Each row corresponds to a face of the hexahedron, 
         and contains the indices of the four vertices that form that face.
@@ -67,23 +58,15 @@ class PolyVecMesh:
             debug=0, normalPlaneDirection=None, tol=1e-3, planeSide=1):
         
         self.fileName = fileName
-        self.normalPlaneDirection = normalPlaneDirection
         self.tol = tol
         self.epsilon = 0.1
         self.debug = debug
-        self.sliceOrigin = sliceOrigin
         self.planeSide= planeSide
-        self.allCellCollection = []
-        
-        self.nCells = None
-        self.points = None
-        self.connectivity = None
-        self.offsets = None
-        self.cellTypes = None
-        self.sliceCoordinate = None
-        self.faces = None
-        self.faceOffsets = None
-        self.colors = None
+
+        self.names = []
+        self.regions = {}
+
+        self.basedir = os.path.dirname(self.fileName)
 
         self.facesHexaHedral = np.array(
             ((0,1,2,3),   # Face 0  bottom
@@ -95,16 +78,69 @@ class PolyVecMesh:
             dtype=np.int8
         )
 
-        self.loadVTK()
+        self.readMultiRegion()
 
-    def loadVTK(self):   
-        """Load VTU file and parse points, connectivity, offsets, cell types, faces, and face offsets from XML format."""
-        # Load VTU XML
+        for region in self.regions:
+            self.sliceOrigin = sliceOrigin
+            self.normalPlaneDirection = normalPlaneDirection
+            self.allCellCollection = []
+            self.colors = None
+
+            self.loadVTU(region)
+
+    def readMultiRegion(self):
         tree = ET.parse(self.fileName)
+        root = tree.getroot()
+        allBlocks = root.find("vtkMultiBlockDataSet")
+        if len(allBlocks) == 1: # No multiregion then use the data array immediately
+            meshInfo = allBlocks[0]
+            meshName = meshInfo.attrib["name"]
+            meshRelativeLocation = meshInfo.attrib["file"]
+            self.regions[meshName] = {
+                "file": os.path.join(self.basedir, meshRelativeLocation)
+            }
+            self.names.append(meshName)
+        else:
+            for block in allBlocks:
+                meshName = block.attrib["name"]
+                meshInfo = block.find("DataSet")
+                meshRelativeLocation = meshInfo.attrib["file"]
+                self.regions[meshName] = {
+                "file": os.path.join(self.basedir, meshRelativeLocation)
+                }
+                self.names.append(meshName)
+
+    def loadVTU(self, regionName):   
+        """
+        Load VTU file and parse points, connectivity, offsets, cell types, faces, and face offsets from XML format.
+        
+        Attributes
+        ----------
+         nCells : int
+            Number of cells in the mesh.
+        points : ndarray
+            Array of mesh points (coordinates).
+        connectivity : ndarray
+            Cell connectivity array (point indices per cell).
+        offsets : ndarray
+            Offsets into the connectivity array per cell.
+        cellTypes : ndarray
+            Array of VTK cell types.
+        sliceCoordinate : float
+            Coordinate along `normalPlaneDirection` defining the slicing plane.
+        faces : ndarray
+            Array of face definitions for polyhedral cells.
+        faceOffsets : ndarray
+            Offsets into the `faces` array per cell.
+
+        """
+        # Load VTU XML
+        regionFile = self.regions[regionName]["file"]
+        tree = ET.parse(regionFile)
         root = tree.getroot()
         meshData = root[0].find("Piece")
 
-        self.nCells = int(meshData.attrib['NumberOfCells'])
+        nCells = int(meshData.attrib['NumberOfCells'])
 
         # Read points
         pointDataXML = meshData.find(".//DataArray[@Name='Points']")
@@ -114,45 +150,57 @@ class PolyVecMesh:
         pointTyping = np.float32 if pointTypeStr == "Float32" else np.float64
         txt = pointDataXML.text.strip().split() 
         pointData = np.array(txt, dtype=pointTyping)   
-        self.points = pointData.reshape(-1, nComponents)
+        points = pointData.reshape(-1, nComponents)
 
         # Auto compute the normal direction of plane taken and origin
         if self.normalPlaneDirection == None:
-            ranges = self.points.max(axis=0) - self.points.min(axis=0)
-            self.normalPlaneDirection = np.argmin(ranges)
+            ranges = points.max(axis=0) - points.min(axis=0)
+            normalPlaneDirection = np.argmin(ranges)
         if self.sliceOrigin == None:
-            mins = self.points.min(axis=0)
-            maxs = self.points.max(axis=0)
+            mins = points.min(axis=0)
+            maxs = points.max(axis=0)
             midpoint = 0.5 * (mins + maxs)
-            self.sliceOrigin = midpoint
+            sliceOrigin = midpoint
 
         # Read connectivity
         connectivityDataXML = meshData.find(".//DataArray[@Name='connectivity']")
         connecitivityTyping = np.int64 if connectivityDataXML.attrib["type"] == "Int64" else np.int32
-        self.connectivity = np.fromstring(connectivityDataXML.text, sep=' ', dtype=connecitivityTyping)
+        connectivity = np.fromstring(connectivityDataXML.text, sep=' ', dtype=connecitivityTyping)
 
         # Read offsets
         offsetsDataXML = meshData.find(".//DataArray[@Name='offsets']")
         offsetsTyping = np.int64 if offsetsDataXML.attrib["type"] == "Int64" else np.int32
-        self.offsets = np.fromstring(offsetsDataXML.text, sep=' ', dtype=offsetsTyping)
-        if self.offsets.size == 0 or self.offsets[0] != 0: # Safe indexing 
-            self.offsets = np.insert(self.offsets, 0, 0)
+        offsets = np.fromstring(offsetsDataXML.text, sep=' ', dtype=offsetsTyping)
+        if offsets.size == 0 or offsets[0] != 0: # Safe indexing 
+            offsets = np.insert(offsets, 0, 0)
 
         # Read cell types
         cellTypesXML = meshData.find(".//DataArray[@Name='types']")
-        self.cellTypes = np.fromstring(cellTypesXML.text, sep=' ', dtype=np.uint8)
+        cellTypes = np.fromstring(cellTypesXML.text, sep=' ', dtype=np.uint8)
 
         # Read faces
         facesDataXML = meshData.find(".//DataArray[@Name='faces']")
         facesType = np.int64 if facesDataXML.attrib["type"] == "Int64" else np.int32
-        self.faces = np.fromstring(facesDataXML.text, sep=' ', dtype=facesType)
+        faces = np.fromstring(facesDataXML.text, sep=' ', dtype=facesType)
 
         # Read face offsets
         faceOffsetsXML = meshData.find(".//DataArray[@Name='faceoffsets']")
         offsetsType = np.int64 if faceOffsetsXML.attrib["type"] == "Int64" else np.int32
-        self.faceOffsets = np.fromstring(faceOffsetsXML.text, sep=' ', dtype=offsetsType)
+        faceOffsets = np.fromstring(faceOffsetsXML.text, sep=' ', dtype=offsetsType)
 
 
+        self.regions[regionName] = {
+                "nCells": nCells,
+                "points": points,
+                "connectivity": connectivity,
+                "offsets": offsets,
+                "cellTypes": cellTypes,
+                "faces": faces,
+                "faceOffsets": faceOffsets,
+                "sliceOrigin":sliceOrigin,
+                "normalPlaneDirection":normalPlaneDirection,
+            }
+        
     def generateCellLines(self, cellPoints, cellIndex):
         """Extracts and projects the 3D points of a given cell (polyhedron or hexahedron) onto 2D, generating line segments for visualization and optionally assigning debug colors"""
         # VTK_POLYHEDRON (42) ### Do not use cellPoints but create all faces
@@ -312,7 +360,9 @@ class PolyVecMesh:
             return abs(normalComponent - 1.0) <= tol or abs(normalComponent + 1.0) <= tol
 
 
-    def createCollection(self, maxDistanceOffSlice=np.inf):
+    def createCollection(self, regionName, maxDistanceOffSlice=np.inf):
+        if regionName not in self.names:
+            raise ValueError(f"Unknown region '{regionName}', available region names:, self.names")
         """
         Extracts 2D line segments for cells near the slicing plane.
 
@@ -328,11 +378,22 @@ class PolyVecMesh:
         list of np.ndarray
             List of 2D line segments representing the cell edges for plotting.
         """
+        
+        self.nCells = self.regions[regionName]["nCells"]
+        self.points = self.regions[regionName]["points"]
+        self.connectivity = self.regions[regionName]["connectivity"]
+        self.offsets = self.regions[regionName]["offsets"]
+        self.cellTypes = self.regions[regionName]["cellTypes"]
+        self.faces = self.regions[regionName]["faces"]
+        self.faceOffsets = self.regions[regionName]["faceOffsets"]
+        self.sliceOrigin = self.regions[regionName]["sliceOrigin"]
+        self.normalPlaneDirection = self.regions[regionName]["normalPlaneDirection"]
+        self.allCellCollection = []
+
 
         if self.debug:
             self.colors = []
 
-        self.maxDistanceOffSlice = maxDistanceOffSlice
         # Build line segments for 2D top view
         self.sliceCoordinate =  self.sliceOrigin[self.normalPlaneDirection]
 
@@ -344,8 +405,8 @@ class PolyVecMesh:
             cellPoints = self.points[cellConnectivity]
 
             cellSliceCoordinate = cellPoints[:, self.normalPlaneDirection]
-            notInSlice = (cellSliceCoordinate > self.sliceCoordinate + self.maxDistanceOffSlice) | \
-                    (cellSliceCoordinate < self.sliceCoordinate - self.maxDistanceOffSlice)
+            notInSlice = (cellSliceCoordinate > self.sliceCoordinate + maxDistanceOffSlice) | \
+                    (cellSliceCoordinate < self.sliceCoordinate - maxDistanceOffSlice)
 
             if np.any(notInSlice):
                 continue 
@@ -374,9 +435,10 @@ class PolyVecMesh:
         """Example function to visualize and debug the extracted VTU mesh slice."""
         self.debug = 1 # overwrite the debug option
         _, ax = plt.subplots(figsize=(10,10))
-        meshLines = self.createCollection()
-        poly = PolyCollection(meshLines, closed=False, edgecolors=self.colors, facecolors='white', linewidths=0.5)
-        ax.add_collection(poly, autolim=True)
-        ax.autoscale(enable=True, tight=True)
-        ax.set_aspect('equal', adjustable='box')
-        plt.show()
+        for name in self.names:
+            meshLines = self.createCollection(name)
+            poly = PolyCollection(meshLines, closed=False, edgecolors=self.colors, facecolors='white', linewidths=0.5)
+            ax.add_collection(poly, autolim=True)
+            ax.autoscale(enable=True, tight=True)
+            ax.set_aspect('equal', adjustable='box')
+            plt.show()

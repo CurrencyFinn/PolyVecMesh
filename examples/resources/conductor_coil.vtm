@@ -1,0 +1,35 @@
+<VTKFile type="vtkMultiBlockDataSet" version="1.0" byte_order="LittleEndian" header_type="UInt64">
+  <vtkMultiBlockDataSet>
+    <Block index="1" name="background">
+      <DataSet index="0" name="internalMesh" file="conductor_coil/conductor_coil_0_0.vtu"/>
+    </Block>
+    <Block index="3" name="conductor">
+      <DataSet index="0" name="internalMesh" file="conductor_coil/conductor_coil_2_0.vtu"/>
+    </Block>
+    <Block index="2" name="coil">
+      <DataSet index="0" name="internalMesh" file="conductor_coil/conductor_coil_1_0.vtu"/>
+    </Block>
+  </vtkMultiBlockDataSet>
+  <FieldData>
+    <DataArray type="Int8" Name="CasePath" NumberOfTuples="90" format="ascii" RangeMin="0" RangeMax="119">
+      92 92 119 115 108 46
+      108 111 99 97 108 104
+      111 115 116 92 85 98
+      117 110 116 117 92 104
+      111 109 101 92 102 105
+      110 110 92 102 111 97
+      109 92 102 105 110 110
+      45 53 46 48 92 114
+      117 110 92 118 101 114
+      105 102 105 99 97 116
+      105 111 110 95 115 111
+      108 105 100 95 112 97
+      114 97 108 108 101 108
+      95 50 48 48 95 57
+      46 49 101 53 92 0
+    </DataArray>
+    <DataArray type="Float64" Name="TimeValue" NumberOfTuples="1" format="ascii" RangeMin="0" RangeMax="0">
+      0
+    </DataArray>
+  </FieldData>
+</VTKFile>

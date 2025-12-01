@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection, PolyCollection
 
 if __name__ == "__main__":
-    vtkFile = r'resources\topview\topview_0_0.vtu' 
-    pvm = pvm(vtkFile)
+    vtmFile = r'resources\topview.vtm' 
+    pvm = pvm(vtmFile)
 
-    meshLines = pvm.createCollection()
+    meshLines = pvm.createCollection("internalMesh")
     fig, axes = plt.subplots(1, 2, figsize=(20, 10))
     ax1, ax2 = axes
 

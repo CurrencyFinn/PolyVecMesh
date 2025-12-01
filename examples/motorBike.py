@@ -5,10 +5,10 @@ from matplotlib.collections import PolyCollection
 import numpy as np
 
 if __name__ == "__main__":
-    vtkFile = r'resources\motorBike\motorBike_0_0.vtu' 
+    vtkFile = r'resources\motorBike.vtm' 
     pvm = pvm(vtkFile, tol=np.inf)
     _, ax = plt.subplots(figsize=(10,10))
-    meshLines = pvm.createCollection()
+    meshLines = pvm.createCollection("internalMesh")
     poly = PolyCollection(meshLines, closed=False, facecolors='white', edgecolors="k", linewidths=0.5, antialiased=True, zorder=-1)
     ax.add_collection(poly, autolim=True)
     
