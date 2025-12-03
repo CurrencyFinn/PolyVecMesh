@@ -1,5 +1,5 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/CurrencyFinn/PolyVecMesh/blob/main/LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.1.2-blue.svg)](https://github.com/CurrencyFinn/PolyVecMesh/releases/)
+[![Version](https://img.shields.io/badge/Version-0.1.3-blue.svg)](https://github.com/CurrencyFinn/PolyVecMesh/releases/)
 
 <img src="examples/imgs/logo.svg" alt="Logo" width="300">
 

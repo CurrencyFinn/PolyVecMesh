@@ -1,6 +1,6 @@
 from PolyVecMesh import PolyVecMesh as pvm
 import matplotlib.pyplot as plt
-from matplotlib.collections import PolyCollection
+from matplotlib.collections import PolyCollection, LineCollection
 
 if __name__ == "__main__":
     vtmFile = r'resources\conductor_coil.vtm' 
@@ -22,6 +22,9 @@ if __name__ == "__main__":
             antialiased=False
         )
         ax.add_collection(poly)
+        
+        # cellLineCollection = LineCollection(meshLines, linewidths=0.5, edgecolors=colors[i])
+        # ax.add_collection(cellLineCollection)
 
     ax.autoscale(enable=True, tight=True)
     ax.set_aspect('equal', adjustable='box')

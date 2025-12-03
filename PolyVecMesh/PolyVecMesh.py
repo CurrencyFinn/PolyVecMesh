@@ -286,7 +286,7 @@ class PolyVecMesh:
     
     @staticmethod
     @jit(nopython=True) 
-    def plane_normal(facePoints):
+    def plane_normal(facePoints, method="Newell"):
         """
         Compute a normal for a polygon/hexahedral robustly.
 
@@ -294,6 +294,8 @@ class PolyVecMesh:
         ----------
         facePoints : numpy.ndarray (N,3) of 3D coordinates
             Array of 3D points on given face.
+        method : string
+            Type of plane normal calculation. default=Newell
 
         Returns
         -------
@@ -302,30 +304,50 @@ class PolyVecMesh:
         """
 
         nPoints = facePoints.shape[0]
+        normal = np.zeros(3, dtype=np.float32)
+
         
-        for i in range(nPoints - 2):
-            A = facePoints[i]
-            B = facePoints[i + 1]
-            C = facePoints[i + 2]
+        if method == "Newell": 
+        # https://www.realtimerendering.com/resources/GraphicsGems/gemsiii/newell.c 
+            for i in range(nPoints):
+                u = facePoints[i]
+                v = facePoints[(i+1) % nPoints]
 
-            v1 = B - A
-            v2 = C - A
-
-            # cross product
-            nx = v1[1]*v2[2] - v1[2]*v2[1]
-            ny = v1[2]*v2[0] - v1[0]*v2[2]
-            nz = v1[0]*v2[1] - v1[1]*v2[0]
-
-            norm = math.sqrt(nx*nx + ny*ny + nz*nz)
-
-            if norm > 1e-8: 
+                normal[0] += (u[1] - v[1]) * (u[2] + v[2])
+                normal[1] += (u[2] - v[2]) * (u[0] + v[0])
+                normal[2] += (u[0] - v[0]) * (u[1] + v[1])
+            
+            norm = math.sqrt(normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2])
+            
+            if norm > 1e-12: 
                 inv = 1.0 / norm
-                normal = np.array([nx*inv, ny*inv, nz*inv], dtype=np.float32)
+                normal[:] = normal * inv
                 return normal
+
+        else:
+        # Can lead to floating point isses resulting false negatives in colinearity on boundary layers
+            for i in range(nPoints - 2):
+                A = facePoints[i]
+                B = facePoints[i + 1]
+                C = facePoints[i + 2]
+
+                v1 = B - A
+                v2 = C - A
+
+                # cross product
+                nx = v1[1]*v2[2] - v1[2]*v2[1]
+                ny = v1[2]*v2[0] - v1[0]*v2[2]
+                nz = v1[0]*v2[1] - v1[1]*v2[0]
+
+                norm = math.sqrt(nx*nx + ny*ny + nz*nz)
+
+                if norm > 1e-12: 
+                    inv = 1.0 / norm
+                    normal[:] = [nx*inv, ny*inv, nz*inv]
+                    return normal
             
         print("Warning: zero normal face detected")
-        # all triples were degenerate
-        normal = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        # all triples were degenerate        
         return normal
 
     @staticmethod
@@ -427,7 +449,6 @@ class PolyVecMesh:
         # reduce the number of draw calls by only selecting unique points some may overlap in normalPlaneDirection
         self.allCellCollection = self.unique_ragged(self.allCellCollection) 
         self.allCellCollection = self.allCellCollection[::-1]
-
 
         return self.allCellCollection
 
