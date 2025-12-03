@@ -19,7 +19,7 @@ This enables high-resolution, scalable mesh figures, something that is not easil
 
 <p align="center"> 
   <img src="examples/imgs/motorBike.svg" alt="Motor Bike Mesh" style="width:67.97%;"> 
-  <img src="examples/imgs/multi_coil.svg" alt="Coil Top Mesh" style="width:29.03%;"> 
+  <img src="examples/imgs/coilTop.svg" alt="Coil Top Mesh" style="width:29.03%;"> 
 </p>
 
 ## Usage
@@ -78,6 +78,8 @@ if __name__ == "__main__":
 ## License
 
 [MIT](https://github.com/CurrencyFinn/PolyVecMesh/blob/main/LICENSE)
+
+
 
 
 
